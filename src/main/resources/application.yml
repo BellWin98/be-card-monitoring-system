@@ -1,0 +1,9 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+kakao:
+  api:
+    key: ${KAKAO_REST_API_KEY}
+    url: https://dapi.kakao.com/v2/local/search/address.json
