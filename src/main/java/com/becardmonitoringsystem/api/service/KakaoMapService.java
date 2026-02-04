@@ -44,13 +44,11 @@ public class KakaoMapService {
                 .build();
     }
 
-//    private final WebClient webClient = WebClient.builder().build();
-
     /**
      * 주소를 좌표로 변환 (요구사항: 1차 실패 시 2차 시도)
      */
     public Document getCoordinates(String addr1, String addr2) {
-        // 1차 시도: 가맹점주소1 + 가맹점주소2
+        // 1차 시도: 주소1 + 주소2
         String fullAddress = addr1 + " " + (addr2 != null ? addr2 : "");
         Document result = fetchFromApi(fullAddress);
 
@@ -81,15 +79,4 @@ public class KakaoMapService {
                 })
                 .block();
     }
-
-/*    private Document fetchFromApi(String address) {
-        return webClient.get()
-                .uri(apiUrl + "?query=" + address) // 전체 URL을 직접 전달
-                .header("Authorization", "KakaoAK " + apiKey)
-                .retrieve()
-                .bodyToMono(KakaoAddressResponse.class)
-                .map(response -> (response.documents() != null && !response.documents().isEmpty())
-                        ? response.documents().getFirst() : null)
-                .block();
-    }*/
 }
