@@ -1,6 +1,7 @@
 package com.becardmonitoringsystem.api.service;
 
 import com.becardmonitoringsystem.api.util.DistanceCalculator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -13,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 @Service
+@Slf4j
 public class ExcelAnalysisService {
 
     private static final double DISTANCE = 2.0;
@@ -70,6 +72,18 @@ public class ExcelAnalysisService {
             String homeAddr1 = getCellValue(row.getCell(45));
             String homeAddr2 = getCellValue(row.getCell(46));
 
+            // 가맹점 주소: 둘 다 비어있으면 에러
+            if (isBlank(storeAddr1) && isBlank(storeAddr2)) {
+                row.createCell(lastCol + 1).setCellValue("가맹점주소 비어있음");
+                return;
+            }
+
+            // 자택 주소: 둘 다 비어있으면 에러
+            if (isBlank(homeAddr1) && isBlank(homeAddr2)) {
+                row.createCell(lastCol + 1).setCellValue("자택주소 비어있음");
+                return;
+            }
+
             // 자택 좌표 수집
             var homeCoord = kakaoMapService.getCoordinates(homeAddr1, homeAddr2);
             if (homeCoord == null) {
@@ -97,6 +111,10 @@ public class ExcelAnalysisService {
         } catch (Exception e) {
             row.createCell(lastCol + 1).setCellValue("계산 중 오류: " + e.getMessage());
         }
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     private String getCellValue(Cell cell) {
