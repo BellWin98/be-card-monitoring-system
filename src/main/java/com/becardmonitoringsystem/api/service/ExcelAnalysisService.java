@@ -38,13 +38,18 @@ public class ExcelAnalysisService {
             header.createCell(lastCol).setCellValue("직선거리(km)");
             header.createCell(lastCol + 1).setCellValue("결과");
 
+            int total = sheet.getLastRowNum();
             // 데이터 행 반복 (헤더 제외)
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 1; i <= total; i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
                 // 1. 개별 행 처리 (여기서 block()이 발생해도 안전함)
                 processRowDetail(row, lastCol);
+
+                if (i % 100 == 0) {
+                    log.info("{}/{}건 처리 완료", i, total);
+                }
 
                 // 2. 인위적인 지연 (Rate Limit 적용)
                 try {
