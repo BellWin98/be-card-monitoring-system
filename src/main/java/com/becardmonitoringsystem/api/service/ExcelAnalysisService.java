@@ -60,7 +60,7 @@ public class ExcelAnalysisService {
             }
 
             // 결과 컬럼이 "2km 초과"인 행 제거 (헤더 제외)
-            int lastRow = sheet.getLastRowNum();
+/*            int lastRow = sheet.getLastRowNum();
             for (int i = lastRow; i >= 1; i--) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
@@ -73,7 +73,7 @@ public class ExcelAnalysisService {
                     }
                     lastRow--;
                 }
-            }
+            }*/
 
             workbook.write(bos);
             return bos.toByteArray();
