@@ -12,12 +12,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 
 @Service
 @Slf4j
 public class ExcelAnalysisService {
 
-    private static final double DISTANCE = 2.0;
+    private static final double DISTANCE = 3.0;
+    // 결과 표시용 기준 거리 문자열 (예: 4.0 → "4km", 2.5 → "2.5km")
+    private static final String DISTANCE_LABEL = BigDecimal.valueOf(DISTANCE).stripTrailingZeros().toPlainString() + "km";
     private final KakaoMapService kakaoMapService;
     private final DistanceCalculator distanceCalculator; // 하버사인 공식 구현체
 
@@ -59,14 +62,14 @@ public class ExcelAnalysisService {
                 }
             }
 
-            // 결과 컬럼이 "2km 초과"인 행 제거 (헤더 제외)
+            // 결과 컬럼이 "기준거리 초과"인 행 제거 (헤더 제외)
 /*            int lastRow = sheet.getLastRowNum();
             for (int i = lastRow; i >= 1; i--) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
                 Cell resultCell = row.getCell(lastCol + 1);
-                if (resultCell != null && "2km 초과".equals(resultCell.getStringCellValue())) {
+                if (resultCell != null && (DISTANCE_LABEL + " 초과").equals(resultCell.getStringCellValue())) {
                     sheet.removeRow(row);
                     if (i < lastRow) {
                         sheet.shiftRows(i + 1, lastRow, -1);
@@ -127,7 +130,7 @@ public class ExcelAnalysisService {
 
             // 결과 기록
             row.createCell(lastCol).setCellValue(Math.round(distance * 100) / 100.0);
-            row.createCell(lastCol + 1).setCellValue(distance <= DISTANCE ? "2km 이내" : "2km 초과");
+            row.createCell(lastCol + 1).setCellValue(distance <= DISTANCE ? DISTANCE_LABEL + " 이내" : DISTANCE_LABEL + " 초과");
 
         } catch (Exception e) {
             row.createCell(lastCol + 1).setCellValue("계산 중 오류: " + e.getMessage());
