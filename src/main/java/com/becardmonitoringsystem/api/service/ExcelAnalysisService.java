@@ -8,7 +8,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -29,8 +28,14 @@ public class ExcelAnalysisService {
         this.distanceCalculator = distanceCalculator;
     }
 
-    public byte[] processExcel(MultipartFile file) {
-        try (InputStream is = file.getInputStream();
+    /** 행 처리 진행 상황 콜백 (처리 건수, 전체 건수) */
+    @FunctionalInterface
+    public interface ProgressListener {
+        void onProgress(int processed, int total);
+    }
+
+    public byte[] processExcel(InputStream is, ProgressListener progressListener) {
+        try (is;
              Workbook workbook = new XSSFWorkbook(is);
              ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 
@@ -42,13 +47,18 @@ public class ExcelAnalysisService {
             header.createCell(lastCol + 1).setCellValue("결과");
 
             int total = sheet.getLastRowNum();
+            progressListener.onProgress(0, total);
             // 데이터 행 반복 (헤더 제외)
             for (int i = 1; i <= total; i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null) {
+                    progressListener.onProgress(i, total);
+                    continue;
+                }
 
                 // 1. 개별 행 처리 (여기서 block()이 발생해도 안전함)
                 processRowDetail(row, lastCol);
+                progressListener.onProgress(i, total);
 
                 if (i % 100 == 0) {
                     log.info("{}/{}건 처리 완료", i, total);
